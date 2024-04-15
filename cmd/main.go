@@ -1,6 +1,9 @@
 package main
 
 import (
+	"embed"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -13,8 +16,12 @@ const (
 	defaultPort = "3000"
 )
 
-func main() {
+var (
+	//go:embed conf/*
+	conf embed.FS
+)
 
+func main() {
 	data := getData()
 
 	port, ok := os.LookupEnv("SRV_PORT")
@@ -37,16 +44,14 @@ func main() {
 }
 
 func getData() routes.Data {
-	return routes.Data{
-		Row: []routes.Row{
-			{
-				Project: "basket",
-				CVEs:    []string{"CVE3000"},
-			},
-			{
-				Project: "giftcard",
-				CVEs:    []string{"CVE2000"},
-			},
-		},
+	data := routes.Data{}
+	confFile, err := conf.ReadFile("conf/conf.json")
+	if err != nil {
+		fmt.Println("error unmarshaling", err)
 	}
+	err = json.Unmarshal(confFile, &data)
+	if err != nil {
+		fmt.Println("cannot unmarshal data struct", err)
+	}
+	return data
 }

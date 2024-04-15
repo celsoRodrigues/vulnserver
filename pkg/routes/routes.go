@@ -10,7 +10,7 @@ import (
 type Routes map[string]func(w http.ResponseWriter, r *http.Request)
 
 type Data struct {
-	Row []Row
+	Row []Row `json:"row"`
 }
 
 type Row struct {
@@ -22,8 +22,10 @@ func CustomRoutes(data *Data) Routes {
 	r := make(Routes)
 
 	for _, d := range data.Row {
-		key := fmt.Sprintf("/%s", d.Project)
-		r[key] = routeFactory(&d)
+		func(d Row) {
+			key := fmt.Sprintf("/%s", d.Project)
+			r[key] = routeFactory(&d)
+		}(d)
 	}
 
 	return r
